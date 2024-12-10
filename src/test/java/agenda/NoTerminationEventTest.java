@@ -65,5 +65,4 @@ public class NoTerminationEventTest {
         assertFalse(neverEnding.isInDay(nov_1_2020.plusDays(4)),
             "Cet événement ne se produit pas à J+4");
     }
-    
 }

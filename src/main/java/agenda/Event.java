@@ -9,7 +9,7 @@ public class Event {
      * The myTitle of this event
      */
     private String myTitle;
-    
+
     /**
      * The starting time of the event
      */
@@ -92,24 +92,43 @@ public class Event {
     public boolean isInDay(LocalDate aDay) {
         // Vérifier si la date est une exception dans la répétition
         if (repetition != null && repetition.isException(aDay)) {
-            return false;
+            return false; // Si la date est une exception, l'événement ne se produit pas ce jour-là.
         }
 
-        // Calcul de la date et heure de fin
-        LocalDateTime endDateTime = myStart.plus(myDuration);
+        // Calculer la prochaine occurrence de l'événement
+        LocalDateTime currentDateTime = myStart;
 
-        // Si l'événement se termine avant le début du jour spécifié, il ne se produit pas ce jour-là
-        if (endDateTime.toLocalDate().isBefore(aDay)) {
-            return false;
+        // Si l'événement ne se répète pas, on ne vérifie que la date de départ
+        if (repetition == null) {
+            return myStart.toLocalDate().isEqual(aDay);
         }
 
-        // Si l'événement commence après la fin du jour spécifié, il ne se produit pas ce jour-là
-        if (myStart.toLocalDate().isAfter(aDay)) {
-            return false;
+        // Répéter l'événement en fonction de la fréquence
+        while (currentDateTime.toLocalDate().isBefore(aDay) || currentDateTime.toLocalDate().isEqual(aDay)) {
+            // Si l'événement tombe exactement sur cette date, on vérifie
+            if (currentDateTime.toLocalDate().isEqual(aDay)) {
+                // Vérifier que l'événement ne se termine avant cette date
+                if (currentDateTime.plus(myDuration).toLocalDate().isAfter(aDay)) {
+                    return true; // Si l'événement est actif ce jour-là
+                }
+            }
+
+            // Déplacer à la prochaine occurrence
+            switch (repetition.getFrequency()) {
+                case DAYS:
+                    currentDateTime = currentDateTime.plusDays(1);
+                    break;
+                case WEEKS:
+                    currentDateTime = currentDateTime.plusWeeks(1);
+                    break;
+                case MONTHS:
+                    currentDateTime = currentDateTime.plusMonths(1);
+                    break;
+            }
         }
 
-        // Sinon, l'événement se produit ce jour-là
-        return true;
+        // Si aucune correspondance n'est trouvée, l'événement ne se produit pas
+        return false;
     }
 
     /**
