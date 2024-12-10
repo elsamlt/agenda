@@ -100,7 +100,9 @@ public class Event {
 
         // Si l'événement ne se répète pas, on ne vérifie que la date de départ
         if (repetition == null) {
-            return myStart.toLocalDate().isEqual(aDay);
+            // L'événement peut commencer dans le jour aDay ou finir dans aDay
+            LocalDateTime endOfEvent = currentDateTime.plus(myDuration);
+            return !currentDateTime.toLocalDate().isAfter(aDay) && !endOfEvent.toLocalDate().isBefore(aDay);
         }
 
         // Répéter l'événement en fonction de la fréquence
@@ -108,7 +110,8 @@ public class Event {
             // Si l'événement tombe exactement sur cette date, on vérifie
             if (currentDateTime.toLocalDate().isEqual(aDay)) {
                 // Vérifier que l'événement ne se termine avant cette date
-                if (currentDateTime.plus(myDuration).toLocalDate().isAfter(aDay)) {
+                LocalDateTime endOfEvent = currentDateTime.plus(myDuration);
+                if (!endOfEvent.toLocalDate().isBefore(aDay)) {
                     return true; // Si l'événement est actif ce jour-là
                 }
             }
@@ -130,6 +133,8 @@ public class Event {
         // Si aucune correspondance n'est trouvée, l'événement ne se produit pas
         return false;
     }
+
+
 
     /**
      * @return the myTitle
